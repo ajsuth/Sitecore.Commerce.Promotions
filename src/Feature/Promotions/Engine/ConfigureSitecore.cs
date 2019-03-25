@@ -28,8 +28,23 @@ namespace Feature.Promotions.Engine
                     .Replace<DoActionAddQualificationBlock, Pipelines.Blocks.DoActionAddQualificationBlock>()
                     .Replace<DoActionAddBenefitBlock, Pipelines.Blocks.DoActionAddBenefitBlock>()
                 )
-                
-            );
+
+				.AddPipeline<Pipelines.IDiscoverProductPromotionsPipeline, Pipelines.DiscoverProductPromotionsPipeline>(pipeline => pipeline
+				   .Add<SearchForPromotionsBlock>()
+				   .Add<FilterPromotionsByValidDateBlock>()
+				   .Add<FilterNotApprovedPromotionsBlock>()
+				   .Add<Pipelines.Blocks.FilterPromotionsByBookAssociatedCatalogsBlock>()
+				   .Add<Pipelines.Blocks.FilterPromotionsByCouponBlock>()
+				   //.Add<Pipelines.Blocks.FilterPromotionsByCalloutBlock>()
+				   //.Add<Pipelines.Blocks.FilterPromotionsByShopNameBlock>()
+				   .Add<Pipelines.Blocks.FilterPromotionsByQualificationRulesBlock>()
+				)
+
+				.ConfigurePipeline<IConfigureServiceApiPipeline>(pipeline => pipeline
+					.Add<Pipelines.Blocks.ConfigureServiceApiBlock>()
+				)
+
+			);
         }
     }
 }

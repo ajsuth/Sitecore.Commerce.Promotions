@@ -20,8 +20,8 @@ namespace Foundation.Carts.Engine.Tests
         {
             [Theory, AutoNSubstituteData]
             public void Execute_01_NoCommerceContext(
-            IRuleExecutionContext context,
-            Cart cart)
+                IRuleExecutionContext context,
+                Cart cart)
             {
                 /**********************************************
                  * Arrange
@@ -423,7 +423,6 @@ namespace Foundation.Carts.Engine.Tests
                 action.HasValidRuleValues(context).ReturnsForAnyArgs(true);
                 action.ApplicableLines(context).ReturnsForAnyArgs(cart.Lines);
                 action.CalculateLineDiscount(cart.Lines[0], context).ReturnsForAnyArgs(AMOUNT_OFF);
-                //action.WhenForAnyArgs(x => x.ProcessLine(cartTotals, cartLine, new PropertiesModel(), string.Empty, commerceContext, context)).
 
                 /**********************************************
                  * Act

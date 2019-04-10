@@ -15,7 +15,7 @@ namespace Foundation.Carts.Engine.Actions
 
     /// <inheritdoc />
     /// <summary>
-    /// Defines a cart action
+    /// Defines the base cart action
     /// </summary>
     [EntityIdentifier(nameof(BaseCartAction))]
     public abstract class BaseCartAction : ICartAction
@@ -26,7 +26,7 @@ namespace Foundation.Carts.Engine.Actions
         /// <param name="context">
         /// The rule execution context.
         /// </param>
-        public void Execute(IRuleExecutionContext context)
+        public virtual void Execute(IRuleExecutionContext context)
         {
             var commerceContext = context.Fact<CommerceContext>();
             var cart = commerceContext?.GetObject<Cart>();
@@ -35,13 +35,13 @@ namespace Foundation.Carts.Engine.Actions
                 return;
             }
 
-            if (this.HasValidRuleValues(context))
+            if (!this.HasValidRuleValues(context))
             {
                 return;
             }
 
             var amount = this.CalculateDiscount(context);
-            amount = ToAdjustmentAmount(amount, commerceContext);
+            amount = this.ToAdjustmentAmount(amount, commerceContext);
             if (amount == Decimal.Zero)
             {
                 return;
@@ -50,11 +50,21 @@ namespace Foundation.Carts.Engine.Actions
             this.ApplyAdjustmentToCart(cart, amount, commerceContext, context);
         }
 
-        protected abstract bool HasValidRuleValues(IRuleExecutionContext context);
-        
-        protected abstract decimal CalculateDiscount(IRuleExecutionContext context);
+		/// <summary>Validates custom rule values.</summary>
+		/// <param name="context">The rule execution context.</param>
+		/// <returns>Flag representing all custom rule values are valid</returns>
+		public abstract bool HasValidRuleValues(IRuleExecutionContext context);
 
-        protected virtual void ApplyAdjustmentToCart(
+		/// <summary>Calculates the discount amount for the cart.</summary>
+		/// <param name="context">The rule execution context.</param>
+		/// <returns>The discount amount.</returns>
+		public abstract decimal CalculateDiscount(IRuleExecutionContext context);
+
+		/// <summary>Applies the adjustment to the cart.</summary>
+		/// <param name="cart">The cart.</param>
+		/// <param name="commerceContext">The commerce context.</param>
+		/// <param name="context">The rule execution context.</param>
+		public virtual void ApplyAdjustmentToCart(
             Cart cart,
             decimal amount,
             CommerceContext commerceContext,
@@ -78,7 +88,11 @@ namespace Foundation.Carts.Engine.Actions
                 $"PromotionApplied: {propertiesModel?.GetPropertyValue("PromotionId") ?? awardingBlock}");
         }
 
-        protected virtual decimal ToAdjustmentAmount(decimal amount, CommerceContext commerceContext)
+		/// <summary>Converts the discount amount to the adjustment amount.</summary>
+		/// <param name="amount">The discount amount.</param>
+		/// <param name="commerceContext">The commerce context.</param>
+		/// <returns>The adjustment amount.</returns>
+		public virtual decimal ToAdjustmentAmount(decimal amount, CommerceContext commerceContext)
         {
             var globalPricingPolicy = commerceContext.GetPolicy<GlobalPricingPolicy>();
             if (globalPricingPolicy.ShouldRoundPriceCalc)
